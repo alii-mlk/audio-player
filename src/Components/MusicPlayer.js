@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import Slider from '@react-native-community/slider'
 import {
     View,
@@ -15,12 +15,14 @@ import TrackPlayer, {
 } from "react-native-track-player"
 
 import { formatTime } from '../../utils/utils'
+import { SongsContext } from '../Contexts/SongsContext'
 
 export default function MusicPlayer({ item }) {
     const playbackState = usePlaybackState()
     const { position, duration } = useProgress()
     const [isSeeking, setIsSeeking] = useState(undefined)
     const [seek, setSeek] = useState(undefined)
+    const { likeHandler } = useContext(SongsContext);
 
     useEffect(() => {
         setupPlayer(item)
@@ -60,12 +62,27 @@ export default function MusicPlayer({ item }) {
         <View style={styles.container}>
 
             <ImageBackground source={{ uri: item.cover }} style={styles.artworkImage}>
-                <TouchableOpacity onPress={() => togglePlayback(playbackState, item)}>
+
+                <View style={styles.imageWrapper}>
+                    <TouchableOpacity onPress={() => togglePlayback(playbackState, item)}>
+                        <Image
+                            style={styles.toggleIcon}
+                            source={
+                                playbackState == State.Playing ? require('../../assets/Logos/audio/pause.png')
+                                    : require('../../assets/Logos/audio/play.png')} />
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                    style={{
+                        flex: 1, alignItems: 'flex-end',
+                    }}
+                    onPress={() => likeHandler(item.title)}
+                >
                     <Image
-                        style={styles.toggleIcon}
-                        source={
-                            playbackState == State.Playing ? require('../../assets/Logos/audio/pause.png')
-                                : require('../../assets/Logos/audio/play.png')} />
+                        style={{ width: 50, height: 50, backgroundColor: 'rgba(230,230,230,0.3)' }}
+                        source={item.isFavorite ? require('../../assets/Logos/heart/heart-filled-black.png') : require('../../assets/Logos/heart/heart-line-black.png')}
+                    />
                 </TouchableOpacity>
             </ImageBackground>
 
@@ -112,10 +129,15 @@ const styles = StyleSheet.create({
         width: 300,
         height: 300,
         marginTop: 50,
+    },
+    imageWrapper: {
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: 300, height: 250,
+        paddingTop: 30
     },
+
     title: {
         textAlign: 'center',
         marginVertical: 5,
@@ -133,7 +155,6 @@ const styles = StyleSheet.create({
     toggleIcon: {
         width: 100,
         height: 100,
-        backgroundColor: 'red',
         borderRadius: 50,
         backgroundColor: '#FFD369'
     }
